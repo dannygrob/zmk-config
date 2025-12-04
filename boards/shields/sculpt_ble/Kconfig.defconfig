@@ -5,5 +5,11 @@ config ZMK_KEYBOARD_NAME
 
 config GPIO_PCF857X
     default y
+
+config I2C
+    default y
+
+config I2C_NRFX
+    default y    
     
 endif
