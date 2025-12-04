@@ -31,13 +31,13 @@
     &pro_micro_i2c {
         status = "okay";
 
-        pcf8575: pcf8575@20 {
-            compatible = "nxp,pcf8575";
+        pcf8575: pcf857x@20 {
+            compatible = "nxp,pcf857x";
             reg = <0x20>;
             status = "okay";
             gpio-controller;
             #gpio-cells = <2>;
-            ngpios = <16>;
+            ngpios = <8>;
         };
     };
 
