@@ -1,0 +1,55 @@
+#include <dt-bindings/zmk/matrix-transform.h>
+
+/ {
+    chosen {
+        zmk,kscan = &kscan0;
+        zmk,keyboard-transform = &sculpt_transform;
+    };
+
+    sculpt_transform: keymap_transform {
+        compatible = "zmk,matrix-transform";
+
+        // Minimal test: 2 rows, 2 columns
+        rows = <2>;
+        columns = <2>;
+
+        map = <
+            MATRIX_TRANSFORM_ENTRY(0, 0)  // row 0, col 0 -> key 0
+            MATRIX_TRANSFORM_ENTRY(0, 1)  // row 0, col 1 -> key 1
+            MATRIX_TRANSFORM_ENTRY(1, 0)  // row 1, col 0 -> key 2
+            MATRIX_TRANSFORM_ENTRY(1, 1)  // row 1, col 1 -> key 3
+        >;
+    };
+};
+
+/* I2C bus on the nice!nano Pro Micro-style header */
+&pro_micro_i2c {
+    status = "okay";
+
+    pcf8575: gpio-expander@20 {
+        compatible = "nxp,pcf8575";
+        reg = <0x20>;
+        #gpio-cells = <2>;
+        gpio-controller;
+        // no INT line wired for now in DT; we can add later if you did
+    };
+};
+
+/* Keyboard scan: 2 rows, 2 columns for testing */
+&pro_micro {
+    kscan0: kscan {
+        compatible = "zmk,kscan-gpio-matrix";
+        label = "Sculpt kscan";
+
+        // Sculpt diodes are effectively col→row; if weird, we can flip this later
+        diode-direction = "col2row";
+
+        // ROW1, ROW2 from your FFC mapped to D4, D5 on nice!nano
+        row-gpios = <&pro_micro 4 GPIO_ACTIVE_HIGH>,
+                    <&pro_micro 5 GPIO_ACTIVE_HIGH>;
+
+        // COL_A, COL_B on PCF8575 P0_0 and P0_1
+        col-gpios = <&pcf8575 0 GPIO_ACTIVE_HIGH>,
+                    <&pcf8575 1 GPIO_ACTIVE_HIGH>;
+    };
+};
