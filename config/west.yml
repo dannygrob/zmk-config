@@ -1,15 +1,18 @@
 manifest:
   defaults:
-    revision: v0.3
+    revision: pcf8575-support
+
   remotes:
     - name: zmkfirmware
       url-base: https://github.com/zmkfirmware
     - name: dannygrob
       url-base: https://github.com/dannygrob
+
   projects:
-    - name: zmk-zephyr
-      remote: dannygrob
-      revision: pcf8575-support       
-      import: app/west.yml
+    - name: zmk
+      remote: dannygrob             
+      revision: pcf8575-support    
+      import: app/west.yml           
+
   self:
     path: config
