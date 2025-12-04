@@ -1,55 +1,59 @@
-#include <dt-bindings/zmk/matrix-transform.h>
+#include <dt-bindings/zmk/matrix_transform.h>
 
-/ {
-    chosen {
-        zmk,kscan = &kscan0;
-        zmk,keyboard-transform = &sculpt_transform;
-    };
+ / {
+     chosen {
+         zmk,kscan = &kscan0;
+         zmk,physical-layout = &sculpt_layout0;
+     };
 
-    sculpt_transform: keymap_transform {
-        compatible = "zmk,matrix-transform";
+     default_transform: keymap_transform0 {
+         compatible = "zmk,matrix-transform";
 
-        // Minimal test: 2 rows, 2 columns
-        rows = <2>;
-        columns = <2>;
+         // 2×2 test matrix
+         columns = <2>;
+         rows = <2>;
 
-        map = <
-            MATRIX_TRANSFORM_ENTRY(0, 0)  // row 0, col 0 -> key 0
-            MATRIX_TRANSFORM_ENTRY(0, 1)  // row 0, col 1 -> key 1
-            MATRIX_TRANSFORM_ENTRY(1, 0)  // row 1, col 0 -> key 2
-            MATRIX_TRANSFORM_ENTRY(1, 1)  // row 1, col 1 -> key 3
-        >;
-    };
-};
+         map = <
+             RC(0,0) RC(0,1)
+             RC(1,0) RC(1,1)
+         >;
+     };
 
-/* I2C bus on the nice!nano Pro Micro-style header */
-&pro_micro_i2c {
-    status = "okay";
+     sculpt_layout0: sculpt_layout_0 {
+         compatible = "zmk,physical-layout";
+         display-name = "Sculpt test layout";
+         kscan = <&kscan0>;
+         transform = <&default_transform>;
+     };
+ };
 
-    pcf8575: gpio-expander@20 {
-        compatible = "nxp,pcf8575";
-        reg = <0x20>;
-        #gpio-cells = <2>;
-        gpio-controller;
-        // no INT line wired for now in DT; we can add later if you did
-    };
-};
+ /* I2C bus on the nice!nano Pro Micro-style header */
+ &pro_micro_i2c {
+     status = "okay";
 
-/* Keyboard scan: 2 rows, 2 columns for testing */
-&pro_micro {
-    kscan0: kscan {
-        compatible = "zmk,kscan-gpio-matrix";
-        label = "Sculpt kscan";
+     pcf8575: gpio-expander@20 {
+         compatible = "nxp,pcf8575";
+         reg = <0x20>;
+         #gpio-cells = <2>;
+         gpio-controller;
+         // add int-gpios later if you wired INT
+     };
+ };
 
-        // Sculpt diodes are effectively col→row; if weird, we can flip this later
-        diode-direction = "col2row";
+ /* Keyboard scan: 2 rows, 2 columns for testing */
+ &pro_micro {
+     kscan0: kscan {
+         compatible = "zmk,kscan-gpio-matrix";
+         label = "Sculpt kscan";
 
-        // ROW1, ROW2 from your FFC mapped to D4, D5 on nice!nano
-        row-gpios = <&pro_micro 4 GPIO_ACTIVE_HIGH>,
-                    <&pro_micro 5 GPIO_ACTIVE_HIGH>;
+         diode-direction = "col2row";
 
-        // COL_A, COL_B on PCF8575 P0_0 and P0_1
-        col-gpios = <&pcf8575 0 GPIO_ACTIVE_HIGH>,
-                    <&pcf8575 1 GPIO_ACTIVE_HIGH>;
-    };
-};
+         // TEMP TEST: use row 0 = D4, row 1 = D5
+         row-gpios = <&pro_micro 4 GPIO_ACTIVE_HIGH>,
+                     <&pro_micro 5 GPIO_ACTIVE_HIGH>;
+
+         // TEMP TEST: use COL_A, COL_B on PCF8575 P0_0, P0_1
+         col-gpios = <&pcf8575 0 GPIO_ACTIVE_HIGH>,
+                     <&pcf8575 1 GPIO_ACTIVE_HIGH>;
+     };
+ };
