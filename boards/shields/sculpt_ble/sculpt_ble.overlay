@@ -31,8 +31,8 @@
     &pro_micro_i2c {
         status = "okay";
 
-        pcf8575: gpio-expander@20 {
-            compatible = "nxp,pcf8574";
+        pcf8575: pcf8575@20 {
+            compatible = "nxp,pcf8575";
             reg = <0x20>;
             status = "okay";
             gpio-controller;
