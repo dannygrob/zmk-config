@@ -32,12 +32,11 @@
      status = "okay";
 
      pcf8575: gpio-expander@20 {
-         compatible = "nxp,pcf8575";
-         reg = <0x20>;
-         #gpio-cells = <2>;
-         gpio-controller;
-         // add int-gpios later if you wired INT
-     };
+        compatible = "nxp,pcf857x";
+        reg = <0x20>;
+        #gpio-cells = <2>;
+        gpio-controller;
+    };
  };
 
  /* Keyboard scan: 2 rows, 2 columns for testing */
