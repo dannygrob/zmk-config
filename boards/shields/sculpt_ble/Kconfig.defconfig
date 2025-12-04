@@ -3,4 +3,7 @@ if SHIELD_SCULPT_BLE
 config ZMK_KEYBOARD_NAME
     default "Sculpt BLE"
 
+config GPIO_PCF857X
+    default y
+    
 endif
