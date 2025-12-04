@@ -32,17 +32,12 @@
         status = "okay";
 
         pcf8575: gpio-expander@20 {
-            compatible = "nxp,pcf857x";
+            compatible = "nxp,pcf8575";
             reg = <0x20>;
             status = "okay";
-
-            /* 16 GPIOs on PCF8575: P0_0..P0_7, P1_0..P1_7 (0..15) */
             gpio-controller;
             #gpio-cells = <2>;
             ngpios = <16>;
-
-            // Optional, if you wire up the INT pin:
-            // int-gpios = <&pro_micro SOME_PIN GPIO_ACTIVE_LOW>;
         };
     };
 
