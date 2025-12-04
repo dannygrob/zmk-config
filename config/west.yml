@@ -7,7 +7,7 @@ manifest:
     - name: dannygrob
       url-base: https://github.com/dannygrob
   projects:
-    - name: zmk
+    - name: zmk-zephyr
       remote: dannygrob
       revision: pcf8575-support       
       import: app/west.yml
