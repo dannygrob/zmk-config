@@ -28,11 +28,11 @@
  };
 
  /* I2C bus on the nice!nano Pro Micro-style header */
-   &pro_micro_i2c {
+    &pro_micro_i2c {
         status = "okay";
 
         pcf8575: gpio-expander@20 {
-            compatible = "nxp,pcf8575";
+            compatible = "nxp,pcf857x";
             reg = <0x20>;
             status = "okay";
             gpio-controller;
@@ -41,20 +41,18 @@
         };
     };
 
- /* Keyboard scan: 2 rows, 2 columns for testing */
- &pro_micro {
-     kscan0: kscan {
-         compatible = "zmk,kscan-gpio-matrix";
-         label = "Sculpt kscan";
+    &pro_micro {
+        kscan0: kscan {
+            compatible = "zmk,kscan-gpio-matrix";
+            label = "Sculpt kscan";
 
-         diode-direction = "col2row";
+            diode-direction = "col2row";
 
-         // TEMP TEST: use row 0 = D4, row 1 = D5
-         row-gpios = <&pro_micro 4 GPIO_ACTIVE_HIGH>,
-                     <&pro_micro 5 GPIO_ACTIVE_HIGH>;
+            row-gpios = <&pro_micro 4 GPIO_ACTIVE_HIGH>,
+                        <&pro_micro 5 GPIO_ACTIVE_HIGH>;
 
-         // TEMP TEST: use COL_A, COL_B on PCF8575 P0_0, P0_1
-         col-gpios = <&pcf8575 0 GPIO_ACTIVE_HIGH>,
-                     <&pcf8575 1 GPIO_ACTIVE_HIGH>;
-     };
- };
+            col-gpios = <&pcf8575 0 GPIO_ACTIVE_HIGH>,
+                        <&pcf8575 1 GPIO_ACTIVE_HIGH>;
+                        /* ... up to 15 if you want */
+        };
+    };
