@@ -1,57 +1,83 @@
-#include <dt-bindings/zmk/matrix_transform.h>
+#include <dt-bindings/gpio/gpio.h>
 
- / {
-     chosen {
-         zmk,kscan = &kscan0;
-         zmk,physical-layout = &sculpt_layout0;
-     };
+&pro_micro {
+    /* Key matrix: 8 rows on MCU, 16+2 cols (16 on PCF8575, 2 on MCU) */
+    kscan0: kscan {
+        compatible = "zmk,kscan-gpio-matrix";
+        label = "SCULPT_KSCAN";
 
-     default_transform: keymap_transform0 {
-         compatible = "zmk,matrix-transform";
+        rows = <8>;
+        cols = <18>;
 
-         // 2×2 test matrix
-         columns = <2>;
-         rows = <2>;
+        /* Sculpt rows:
+         * FFC pin → net → Pro Micro pin
+         *  2 → ROW1 → D4
+         *  3 → ROW2 → D5
+         *  4 → ROW3 → D6
+         *  5 → ROW4 → D7
+         *  6 → ROW5 → D8
+         *  7 → ROW6 → D9
+         *  8 → ROW7 → 10
+         *  9 → ROW8 → 16
+         */
+        row-gpios = <
+            &pro_micro  4  GPIO_ACTIVE_LOW  /* ROW1: D4 */
+            &pro_micro  5  GPIO_ACTIVE_LOW  /* ROW2: D5 */
+            &pro_micro  6  GPIO_ACTIVE_LOW  /* ROW3: D6 */
+            &pro_micro  7  GPIO_ACTIVE_LOW  /* ROW4: D7 */
+            &pro_micro  8  GPIO_ACTIVE_LOW  /* ROW5: D8 */
+            &pro_micro  9  GPIO_ACTIVE_LOW  /* ROW6: D9 */
+            &pro_micro 10  GPIO_ACTIVE_LOW  /* ROW7: D10 */
+            &pro_micro 16  GPIO_ACTIVE_LOW  /* ROW8: D16 */
+        >;
 
-         map = <
-             RC(0,0) RC(0,1)
-             RC(1,0) RC(1,1)
-         >;
-     };
+        /* Sculpt columns:
+         *
+         * FFC 10–25: COL_A..COL_P → PCF8575 P0_0..P1_7
+         * FFC 26–27: COL_Q, COL_R → Pro Micro 14, 15
+         *
+         * PCF8575 pin index mapping:
+         *   P0_0..P0_7 → 0..7
+         *   P1_0..P1_7 → 8..15
+         */
+        col-gpios = <
+            &pcf8575  0  GPIO_ACTIVE_LOW   /* COL_A: P0_0, FFC 10 */
+            &pcf8575  1  GPIO_ACTIVE_LOW   /* COL_B: P0_1, FFC 11 */
+            &pcf8575  2  GPIO_ACTIVE_LOW   /* COL_C: P0_2, FFC 12 */
+            &pcf8575  3  GPIO_ACTIVE_LOW   /* COL_D: P0_3, FFC 13 */
+            &pcf8575  4  GPIO_ACTIVE_LOW   /* COL_E: P0_4, FFC 14 */
+            &pcf8575  5  GPIO_ACTIVE_LOW   /* COL_F: P0_5, FFC 15 */
+            &pcf8575  6  GPIO_ACTIVE_LOW   /* COL_G: P0_6, FFC 16 */
+            &pcf8575  7  GPIO_ACTIVE_LOW   /* COL_H: P0_7, FFC 17 */
+            &pcf8575  8  GPIO_ACTIVE_LOW   /* COL_I: P1_0, FFC 18 */
+            &pcf8575  9  GPIO_ACTIVE_LOW   /* COL_J: P1_1, FFC 19 */
+            &pcf8575 10  GPIO_ACTIVE_LOW   /* COL_K: P1_2, FFC 20 */
+            &pcf8575 11  GPIO_ACTIVE_LOW   /* COL_L: P1_3, FFC 21 */
+            &pcf8575 12  GPIO_ACTIVE_LOW   /* COL_M: P1_4, FFC 22 */
+            &pcf8575 13  GPIO_ACTIVE_LOW   /* COL_N: P1_5, FFC 23 */
+            &pcf8575 14  GPIO_ACTIVE_LOW   /* COL_O: P1_6, FFC 24 */
+            &pcf8575 15  GPIO_ACTIVE_LOW   /* COL_P: P1_7, FFC 25 */
+            &pro_micro 14 GPIO_ACTIVE_LOW  /* COL_Q: D14, FFC 26 */
+            &pro_micro 15 GPIO_ACTIVE_LOW  /* COL_R: D15, FFC 27 */
+        >;
 
-     sculpt_layout0: sculpt_layout_0 {
-         compatible = "zmk,physical-layout";
-         display-name = "Sculpt test layout";
-         kscan = <&kscan0>;
-         transform = <&default_transform>;
-     };
- };
-
- /* I2C bus on the nice!nano Pro Micro-style header */
-   /* &pro_micro_i2c {
-        status = "okay";
-
-        pcf8575: gpio-expander@20 {
-            compatible = "nxp,pcf857x";
-            reg = <0x20>;
-            status = "okay";
-            gpio-controller;
-            #gpio-cells = <2>;
-            ngpios = <16>;
-        };
-    };*/
-
-    &pro_micro {
-        kscan0: kscan {
-            compatible = "zmk,kscan-gpio-matrix";
-            label = "Sculpt kscan";
-
-            diode-direction = "col2row";
-
-            row-gpios = <&pro_micro 4 GPIO_ACTIVE_HIGH>,
-                        <&pro_micro 5 GPIO_ACTIVE_HIGH>;
-
-            col-gpios = <&pcf8575 0 GPIO_ACTIVE_HIGH>,
-                        <&pcf8575 1 GPIO_ACTIVE_HIGH>;
-        };
+        /* Guess: original Sculpt is diodes from column to row.
+         * If it’s backwards, you’ll swap this to "row2col" later.
+         */
+        diode-direction = "col2row";
     };
+};
+
+/* I2C bus on the nice!nano Pro Micro-style header */
+&pro_micro_i2c {
+    status = "okay";
+
+    pcf8575: gpio-expander@20 {
+        compatible = "nxp,pcf857x";
+        reg = <0x20>;
+        status = "okay";
+        gpio-controller;
+        #gpio-cells = <2>;
+        ngpios = <16>;
+    };
+};
