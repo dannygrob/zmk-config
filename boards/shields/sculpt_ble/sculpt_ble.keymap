@@ -7,8 +7,8 @@
 
         default_layer {
             bindings = <
-                &bt BT_SEL 0    &bt BT_CLR
-                &bt BT_NEXT      &bt BT_PREV
+                &bt 0    &bt 1
+                &bt 2    &bt 3
             >;
         };
     };
