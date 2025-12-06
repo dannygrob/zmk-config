@@ -11,8 +11,5 @@ config I2C
 
 config I2C_NRFX
     default y    
-
-config CONFIG_ZMK_BLE_CLEAR_BONDS_ON_START
-    default y
     
 endif
