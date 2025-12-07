@@ -5,13 +5,7 @@ config ZMK_KEYBOARD_NAME
 
 config GPIO_PCF857X
     default y
-
-config ZMK_KSCAN_MATRIX_ROWS
-    default 8
-
-config ZMK_KSCAN_MATRIX_COLS
-    default 18    
-
+    
 config I2C
     default y
 
