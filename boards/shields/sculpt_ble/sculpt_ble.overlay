@@ -1,83 +1,86 @@
-#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/zmk/matrix-transform.h>
 
-&pro_micro {
-    /* Key matrix: 8 rows on MCU, 16+2 cols (16 on PCF8575, 2 on MCU) */
-    kscan0: kscan {
-        compatible = "zmk,kscan-gpio-matrix";
-        label = "SCULPT_KSCAN";
+/ {
+    chosen {
+        zmk,kscan = &kscan0;
+        zmk,keyboard-transform = &sculpt_transform;
+    };
 
-        rows = <8>;
-        cols = <18>;
+    sculpt_transform: keymap_transform {
+        compatible = "zmk,matrix-transform";
 
-        /* Sculpt rows:
-         * FFC pin → net → Pro Micro pin
-         *  2 → ROW1 → D4
-         *  3 → ROW2 → D5
-         *  4 → ROW3 → D6
-         *  5 → ROW4 → D7
-         *  6 → ROW5 → D8
-         *  7 → ROW6 → D9
-         *  8 → ROW7 → 10
-         *  9 → ROW8 → 16
-         */
-        row-gpios = <
-            &pro_micro  4  GPIO_ACTIVE_LOW  /* ROW1: D4 */
-            &pro_micro  5  GPIO_ACTIVE_LOW  /* ROW2: D5 */
-            &pro_micro  6  GPIO_ACTIVE_LOW  /* ROW3: D6 */
-            &pro_micro  7  GPIO_ACTIVE_LOW  /* ROW4: D7 */
-            &pro_micro  8  GPIO_ACTIVE_LOW  /* ROW5: D8 */
-            &pro_micro  9  GPIO_ACTIVE_LOW  /* ROW6: D9 */
-            &pro_micro 10  GPIO_ACTIVE_LOW  /* ROW7: D10 */
-            &pro_micro 16  GPIO_ACTIVE_LOW  /* ROW8: D16 */
+        // FIXME: this is a placeholder 2x2 matrix,
+        // we'll expand it to full Sculpt later.
+        rows = <2>;
+        columns = <2>;
+
+        map = <
+            MATRIX_TRANSFORM_ENTRY(0, 0)  // key 0
+            MATRIX_TRANSFORM_ENTRY(0, 1)  // key 1
+            MATRIX_TRANSFORM_ENTRY(1, 0)  // key 2
+            MATRIX_TRANSFORM_ENTRY(1, 1)  // key 3
         >;
-
-        /* Sculpt columns:
-         *
-         * FFC 10–25: COL_A..COL_P → PCF8575 P0_0..P1_7
-         * FFC 26–27: COL_Q, COL_R → Pro Micro 14, 15
-         *
-         * PCF8575 pin index mapping:
-         *   P0_0..P0_7 → 0..7
-         *   P1_0..P1_7 → 8..15
-         */
-        col-gpios = <
-            &pcf8575  0  GPIO_ACTIVE_LOW   /* COL_A: P0_0, FFC 10 */
-            &pcf8575  1  GPIO_ACTIVE_LOW   /* COL_B: P0_1, FFC 11 */
-            &pcf8575  2  GPIO_ACTIVE_LOW   /* COL_C: P0_2, FFC 12 */
-            &pcf8575  3  GPIO_ACTIVE_LOW   /* COL_D: P0_3, FFC 13 */
-            &pcf8575  4  GPIO_ACTIVE_LOW   /* COL_E: P0_4, FFC 14 */
-            &pcf8575  5  GPIO_ACTIVE_LOW   /* COL_F: P0_5, FFC 15 */
-            &pcf8575  6  GPIO_ACTIVE_LOW   /* COL_G: P0_6, FFC 16 */
-            &pcf8575  7  GPIO_ACTIVE_LOW   /* COL_H: P0_7, FFC 17 */
-            &pcf8575  8  GPIO_ACTIVE_LOW   /* COL_I: P1_0, FFC 18 */
-            &pcf8575  9  GPIO_ACTIVE_LOW   /* COL_J: P1_1, FFC 19 */
-            &pcf8575 10  GPIO_ACTIVE_LOW   /* COL_K: P1_2, FFC 20 */
-            &pcf8575 11  GPIO_ACTIVE_LOW   /* COL_L: P1_3, FFC 21 */
-            &pcf8575 12  GPIO_ACTIVE_LOW   /* COL_M: P1_4, FFC 22 */
-            &pcf8575 13  GPIO_ACTIVE_LOW   /* COL_N: P1_5, FFC 23 */
-            &pcf8575 14  GPIO_ACTIVE_LOW   /* COL_O: P1_6, FFC 24 */
-            &pcf8575 15  GPIO_ACTIVE_LOW   /* COL_P: P1_7, FFC 25 */
-            &pro_micro 14 GPIO_ACTIVE_LOW  /* COL_Q: D14, FFC 26 */
-            &pro_micro 15 GPIO_ACTIVE_LOW  /* COL_R: D15, FFC 27 */
-        >;
-
-        /* Guess: original Sculpt is diodes from column to row.
-         * If it’s backwards, you’ll swap this to "row2col" later.
-         */
-        diode-direction = "col2row";
     };
 };
 
-/* I2C bus on the nice!nano Pro Micro-style header */
+/* I2C bus on pro_micro (nice!nano) */
 &pro_micro_i2c {
     status = "okay";
 
     pcf8575: gpio-expander@20 {
-        compatible = "nxp,pcf857x";
+        compatible = "nxp,pcf8575";
         reg = <0x20>;
-        status = "okay";
-        gpio-controller;
         #gpio-cells = <2>;
-        ngpios = <16>;
+        gpio-controller;
+
+        // INT pin from PCF8575 -> A1 on pro_micro (your wiring)
+        int-gpios = <&pro_micro 19 GPIO_ACTIVE_LOW>;
+    };
+};
+
+/* Keyboard scan configuration */
+&pro_micro {
+    kscan0: kscan {
+        compatible = "zmk,kscan-gpio-matrix";
+        label = "sculpt_kscan";
+
+        // You likely have diodes oriented col->row but
+        // confirm with the Sculpt docs. Adjust if needed.
+        diode-direction = "col2row";
+
+        // Rows: D4, D5, D6, D7, D8, D9, 10, 16
+        row-gpios = <&pro_micro 4 GPIO_ACTIVE_HIGH>,
+                    <&pro_micro 5 GPIO_ACTIVE_HIGH>,
+                    <&pro_micro 6 GPIO_ACTIVE_HIGH>,
+                    <&pro_micro 7 GPIO_ACTIVE_HIGH>,
+                    <&pro_micro 8 GPIO_ACTIVE_HIGH>,
+                    <&pro_micro 9 GPIO_ACTIVE_HIGH>,
+                    <&pro_micro 10 GPIO_ACTIVE_HIGH>,
+                    <&pro_micro 16 GPIO_ACTIVE_HIGH>;
+
+        // Columns: A–P on PCF8575, Q/R on pro_micro 14/15
+        col-gpios = <&pcf8575 0 GPIO_ACTIVE_HIGH>,  /* COL_A */
+                    <&pcf8575 1 GPIO_ACTIVE_HIGH>,  /* COL_B */
+                    <&pcf8575 2 GPIO_ACTIVE_HIGH>,  /* COL_C */
+                    <&pcf8575 3 GPIO_ACTIVE_HIGH>,  /* COL_D */
+                    <&pcf8575 4 GPIO_ACTIVE_HIGH>,  /* COL_E */
+                    <&pcf8575 5 GPIO_ACTIVE_HIGH>,  /* COL_F */
+                    <&pcf8575 6 GPIO_ACTIVE_HIGH>,  /* COL_G */
+                    <&pcf8575 7 GPIO_ACTIVE_HIGH>,  /* COL_H */
+                    <&pcf8575 8 GPIO_ACTIVE_HIGH>,  /* COL_I */
+                    <&pcf8575 9 GPIO_ACTIVE_HIGH>,  /* COL_J */
+                    <&pcf8575 10 GPIO_ACTIVE_HIGH>, /* COL_K */
+                    <&pcf8575 11 GPIO_ACTIVE_HIGH>, /* COL_L */
+                    <&pcf8575 12 GPIO_ACTIVE_HIGH>, /* COL_M */
+                    <&pcf8575 13 GPIO_ACTIVE_HIGH>, /* COL_N */
+                    <&pcf8575 14 GPIO_ACTIVE_HIGH>, /* COL_O */
+                    <&pcf8575 15 GPIO_ACTIVE_HIGH>, /* COL_P */
+                    <&pro_micro 14 GPIO_ACTIVE_HIGH>, /* COL_Q */
+                    <&pro_micro 15 GPIO_ACTIVE_HIGH>; /* COL_R */
+    };
+
+    fn_switch: fn_switch {
+        gpios = <&pro_micro 18 GPIO_ACTIVE_LOW>;
+        // We'll bind this as a key later in the keymap.
     };
 };
