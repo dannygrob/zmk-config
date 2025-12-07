@@ -86,8 +86,8 @@
 /* I2C bus on the nice!nano Pro Micro-style header */
 &pro_micro_i2c {
     status = "okay";
-    sda-pin = <26>;  /* nice!nano pin 2 → P0.26 */
-    scl-pin = <27>;  /* nice!nano pin 3 → P0.27 */
+    sda-pin = <17>;  
+    scl-pin = <20>;  
 
     pcf8575: gpio-expander@20 {
         compatible = "nxp,pcf857x";
