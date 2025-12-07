@@ -17,7 +17,8 @@
     kscan0: kscan {
         compatible = "zmk,kscan-gpio-matrix";
         label = "SCULPT_KSCAN";
-
+        debounce-press-ms = <10>;
+        debounce-release-ms = <10>;
         rows = <8>;
         cols = <18>;
 
@@ -79,7 +80,7 @@
          * need to be flipped to "row2col", but with your current wiring
          * this is the sane guess.
          */
-        diode-direction = "col2row";
+        diode-direction = "row2col";
     };
 };
 
