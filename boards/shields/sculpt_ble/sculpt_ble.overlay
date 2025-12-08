@@ -12,79 +12,14 @@
  *     COL_A..COL_P -> PCF8575 P0_0..P1_7 (I2C @ 0x20)
  *     COL_Q, COL_R -> D14, D15 on the nice!nano
  */
-
-&pro_micro {
-    kscan0: kscan {
-        compatible = "zmk,kscan-gpio-matrix";
-        label = "SCULPT_KSCAN";
-        debounce-press-ms = <10>;
-        debounce-release-ms = <10>;
-        rows = <8>;
-        cols = <18>;
-
-        /* Sculpt rows:
-         * FFC pin → net → Pro Micro pin
-         *  2 → ROW1 → D4
-         *  3 → ROW2 → D5
-         *  4 → ROW3 → D6
-         *  5 → ROW4 → D7
-         *  6 → ROW5 → D8
-         *  7 → ROW6 → D9
-         *  8 → ROW7 → D10
-         *  9 → ROW8 → D16
-         */
-        row-gpios = <
-            &pro_micro  4  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)  /* ROW1: D4  */
-            &pro_micro  5  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)  /* ROW2: D5  */
-            &pro_micro  6  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)  /* ROW3: D6  */
-            &pro_micro  7  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)  /* ROW4: D7  */
-            &pro_micro  8  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)  /* ROW5: D8  */
-            &pro_micro  9  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)  /* ROW6: D9  */
-            &pro_micro 10  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)  /* ROW7: D10 */
-            &pro_micro 16  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)  /* ROW8: D16 */
-        >;
-
-        /* Sculpt columns:
-         *
-         * FFC 10–25: COL_A..COL_P → PCF8575 P0_0..P1_7
-         * FFC 26–27: COL_Q, COL_R → Pro Micro 14, 15
-         *
-         * PCF8575 pin index mapping:
-         *   P0_0..P0_7 → 0..7
-         *   P1_0..P1_7 → 8..15
-         */
-        col-gpios = <
-            &pcf8575   0 GPIO_ACTIVE_LOW   /* COL_A: P0_0, FFC 10 */
-            &pcf8575   1 GPIO_ACTIVE_LOW   /* COL_B: P0_1, FFC 11 */
-            &pcf8575   2 GPIO_ACTIVE_LOW   /* COL_C: P0_2, FFC 12 */
-            &pcf8575   3 GPIO_ACTIVE_LOW   /* COL_D: P0_3, FFC 13 */
-            &pcf8575   4 GPIO_ACTIVE_LOW   /* COL_E: P0_4, FFC 14 */
-            &pcf8575   5 GPIO_ACTIVE_LOW   /* COL_F: P0_5, FFC 15 */
-            &pcf8575   6 GPIO_ACTIVE_LOW   /* COL_G: P0_6, FFC 16 */
-            &pcf8575   7 GPIO_ACTIVE_LOW   /* COL_H: P0_7, FFC 17 */
-            &pcf8575   8 GPIO_ACTIVE_LOW   /* COL_I: P1_0, FFC 18 */
-            &pcf8575   9 GPIO_ACTIVE_LOW   /* COL_J: P1_1, FFC 19 */
-            &pcf8575  10 GPIO_ACTIVE_LOW   /* COL_K: P1_2, FFC 20 */
-            &pcf8575  11 GPIO_ACTIVE_LOW   /* COL_L: P1_3, FFC 21 */
-            &pcf8575  12 GPIO_ACTIVE_LOW   /* COL_M: P1_4, FFC 22 */
-            &pcf8575  13 GPIO_ACTIVE_LOW   /* COL_N: P1_5, FFC 23 */
-            &pcf8575  14 GPIO_ACTIVE_LOW   /* COL_O: P1_6, FFC 24 */
-            &pcf8575  15 GPIO_ACTIVE_LOW   /* COL_P: P1_7, FFC 25 */
-            &pro_micro 14 GPIO_ACTIVE_LOW  /* COL_Q: D14, FFC 26 */
-            &pro_micro 15 GPIO_ACTIVE_LOW  /* COL_R: D15, FFC 27 */
-        >;
-
-        /*
-         * Sculpt original matrix is diodes from column to row.
-         * If you see ghosting / nothing working, the direction might
-         * need to be flipped to "row2col", but with your current wiring
-         * this is the sane guess.
-         */
-        diode-direction = "row2col";
+ 
+ / {
+    chosen {
+        zmk,kscan = &sculpt_scan;
     };
 };
 
-/* I2C bus on the nice!nano Pro Micro-style header */
+/* I2C bus for the PCF8575 */
 &pro_micro_i2c {
     status = "okay";
     sda-pin = <17>;
@@ -97,5 +32,60 @@
         gpio-controller;
         #gpio-cells = <2>;
         ngpios = <16>;
+    };
+};
+
+&pro_micro {
+    sculpt_scan: kscan {
+        compatible = "zmk,kscan-gpio-matrix";
+        label = "SCULPT_SCAN";
+
+        /* Your real matrix dimensions */
+        rows = <8>;
+        cols = <18>;
+
+        /* Correct for Sculpt: rows are driven low, cols are read */
+        diode-direction = "row2col";
+
+        /* ---------- ROWS (8) — ALL FROM MCU ---------- */
+
+        /* YES: Each row is exactly the FPC→D4..D16 list you confirmed */
+        row-gpios = <
+            &pro_micro 4  GPIO_ACTIVE_LOW    /* ROW0 = FPC29 → D4  */
+            &pro_micro 5  GPIO_ACTIVE_LOW    /* ROW1 = FPC28 → D5  */
+            &pro_micro 6  GPIO_ACTIVE_LOW    /* ROW2 = FPC27 → D6  */
+            &pro_micro 7  GPIO_ACTIVE_LOW    /* ROW3 = FPC26 → D7  */
+            &pro_micro 8  GPIO_ACTIVE_LOW    /* ROW4 = FPC25 → D8  */
+            &pro_micro 9  GPIO_ACTIVE_LOW    /* ROW5 = FPC24 → D9  */
+            &pro_micro 10 GPIO_ACTIVE_LOW    /* ROW6 = FPC23 → D10 */
+            &pro_micro 16 GPIO_ACTIVE_LOW    /* ROW7 = FPC22 → D16 */
+        >;
+
+        /* ---------- COLS (18) — PCF0-15 + MCU D14/D15 ---------- */
+
+        col-gpios = <
+            /* PCF8575 pins P00–P17 become columns 0–15 */
+            &pcf8575 0  GPIO_ACTIVE_LOW    /* COL0  = P00 */
+            &pcf8575 1  GPIO_ACTIVE_LOW    /* COL1  = P01 */
+            &pcf8575 2  GPIO_ACTIVE_LOW    /* COL2  = P02 */
+            &pcf8575 3  GPIO_ACTIVE_LOW    /* COL3  = P03 */
+            &pcf8575 4  GPIO_ACTIVE_LOW    /* COL4  = P04 */
+            &pcf8575 5  GPIO_ACTIVE_LOW    /* COL5  = P05 */
+            &pcf8575 6  GPIO_ACTIVE_LOW    /* COL6  = P06 */
+            &pcf8575 7  GPIO_ACTIVE_LOW    /* COL7  = P07 */
+
+            &pcf8575 8  GPIO_ACTIVE_LOW    /* COL8  = P10 */
+            &pcf8575 9  GPIO_ACTIVE_LOW    /* COL9  = P11 */
+            &pcf8575 10 GPIO_ACTIVE_LOW    /* COL10 = P12 */
+            &pcf8575 11 GPIO_ACTIVE_LOW    /* COL11 = P13 */
+            &pcf8575 12 GPIO_ACTIVE_LOW    /* COL12 = P14 */
+            &pcf8575 13 GPIO_ACTIVE_LOW    /* COL13 = P15 */
+            &pcf8575 14 GPIO_ACTIVE_LOW    /* COL14 = P16 */
+            &pcf8575 15 GPIO_ACTIVE_LOW    /* COL15 = P17 */
+
+            /* MCU columns */
+            &pro_micro 14 GPIO_ACTIVE_LOW   /* COL16 = D14 (COL_Q) */
+            &pro_micro 15 GPIO_ACTIVE_LOW   /* COL17 = D15 (COL_R) */
+        >;
     };
 };
