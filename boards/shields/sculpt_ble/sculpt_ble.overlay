@@ -45,7 +45,7 @@
         cols = <18>;
 
         /* Correct for Sculpt: rows are driven low, cols are read */
-        diode-direction = "row2col";
+        diode-direction = "col2row";
 
         /* ---------- ROWS (8) — ALL FROM MCU ---------- */
 
