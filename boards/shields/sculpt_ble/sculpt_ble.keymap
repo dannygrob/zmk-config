@@ -23,7 +23,7 @@
         &none            &none         &none         &none         &none         &none
 
         /* ROW 2 */
-        &kp HOME         &kp C_AC_CALC &kp P         &kp O         &kp I         &kp U
+        &kp HOME         &kp K_CALC    &kp P         &kp O         &kp I         &kp U
         &kp R            &kp E         &kp CAPS      &kp N3        &kp T         &none
         &none            &none         &none         &none         &none         &none
 
